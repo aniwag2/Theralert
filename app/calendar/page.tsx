@@ -4,6 +4,7 @@ import type { BadgeProps } from 'antd';
 import { Badge, Calendar } from 'antd';
 import type { Dayjs } from 'dayjs';
 import type { CellRenderInfo } from 'rc-picker/lib/interface';
+import Link from "next/link"
 
 const getListData = (value: Dayjs) => {
   let listData;
@@ -72,7 +73,12 @@ const App: React.FC = () => {
     return info.originNode;
   };
 
-  return <Calendar cellRender={cellRender} />;
+  return (
+    <main>
+      <Calendar cellRender={cellRender} />
+      <Link href="/">Link to Home</Link>
+    </main>
+  );
 };
 
 export default App;
