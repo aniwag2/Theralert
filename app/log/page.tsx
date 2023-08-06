@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+
 export default function Log() {
   let time = "";
   let newDate = new Date();
@@ -19,7 +20,6 @@ export default function Log() {
         <br></br>
         <button type="submit">Clock In</button>
       </form>
-      <Link href="/">Home</Link>
     </main>
   )
 }

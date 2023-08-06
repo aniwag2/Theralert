@@ -76,7 +76,6 @@ const App: React.FC = () => {
   return (
     <main>
       <Calendar cellRender={cellRender} />
-      <Link href="/">Link to Home</Link>
     </main>
   );
 };
