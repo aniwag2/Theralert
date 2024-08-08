@@ -6,6 +6,8 @@ const nextConfig = {
         DB_PASSWORD: process.env.DB_PASSWORD,
         DB_NAME: process.env.DB_NAME,
     },
+    reactStrictMode: true,
+    transpilePackages: ['react-big-calendar']
 };
 
 module.exports = nextConfig
