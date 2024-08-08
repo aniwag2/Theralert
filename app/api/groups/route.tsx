@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { patientEmail } = await req.json()
+    const { patientEmail, familyEmails } = await req.json()
 
     // Check if patient exists
     const patients = await query('SELECT id FROM users WHERE email = ? AND role = ?', [patientEmail, 'patient'])
@@ -26,8 +26,33 @@ export async function POST(req: Request) {
       'INSERT INTO groups (patient_id, staff_id) VALUES (?, ?)',
       [patientId, session.user.id]
     )
+    const groupId = result.insertId
 
-    return NextResponse.json({ message: 'Group created successfully', groupId: result.insertId }, { status: 201 })
+    // Add family members
+    for (const email of familyEmails) {
+      let familyMemberId
+
+      // Check if family member exists
+      const familyMembers = await query('SELECT id FROM users WHERE email = ? AND role = ?', [email, 'family'])
+      if (familyMembers.length === 0) {
+        // Create new family member user
+        const newFamilyMember = await query(
+          'INSERT INTO users (email, role, name, password) VALUES (?, ?, ?, ?)',
+          [email, 'family', 'Family Member', 'temporarypassword'] // You should generate a random password and send an email to the user to set their password
+        )
+        familyMemberId = newFamilyMember.insertId
+      } else {
+        familyMemberId = familyMembers[0].id
+      }
+
+      // Add family member to group
+      await query(
+        'INSERT INTO group_members (group_id, user_id) VALUES (?, ?)',
+        [groupId, familyMemberId]
+      )
+    }
+
+    return NextResponse.json({ message: 'Group created successfully', groupId }, { status: 201 })
   } catch (error) {
     console.error('Error creating group:', error)
     return NextResponse.json({ error: 'Failed to create group' }, { status: 500 })

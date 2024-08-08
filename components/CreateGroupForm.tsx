@@ -9,7 +9,23 @@ interface CreateGroupFormProps {
 
 export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
   const [patientEmail, setPatientEmail] = useState('')
+  const [familyEmails, setFamilyEmails] = useState([''])
   const [error, setError] = useState('')
+
+  const handleAddFamilyMember = () => {
+    setFamilyEmails([...familyEmails, ''])
+  }
+
+  const handleRemoveFamilyMember = (index: number) => {
+    const newFamilyEmails = familyEmails.filter((_, i) => i !== index)
+    setFamilyEmails(newFamilyEmails)
+  }
+
+  const handleFamilyEmailChange = (index: number, value: string) => {
+    const newFamilyEmails = [...familyEmails]
+    newFamilyEmails[index] = value
+    setFamilyEmails(newFamilyEmails)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,7 +37,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ patientEmail }),
+        body: JSON.stringify({ patientEmail, familyEmails: familyEmails.filter(email => email !== '') }),
       })
 
       if (!response.ok) {
@@ -30,6 +46,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
       }
 
       setPatientEmail('')
+      setFamilyEmails([''])
       onGroupCreated()
     } catch (error) {
       setError(error.message)
@@ -53,9 +70,36 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
           required
         />
       </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Family Member Emails</label>
+        {familyEmails.map((email, index) => (
+          <div key={index} className="flex mt-2">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => handleFamilyEmailChange(index, e.target.value)}
+              className="flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            />
+            <button
+              type="button"
+              onClick={() => handleRemoveFamilyMember(index)}
+              className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={handleAddFamilyMember}
+          className="mt-2 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Add Family Member
+        </button>
+      </div>
       <button
         type="submit"
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
       >
         Create Group
       </button>
