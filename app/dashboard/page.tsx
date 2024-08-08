@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 'use client'
 
 import { useSession } from 'next-auth/react'
@@ -59,7 +60,13 @@ export default function Dashboard() {
           </select>
           
           {session?.user?.role === 'staff' && selectedGroup && (
-            <ActivityForm groupId={selectedGroup} />
+            <ActivityForm groupId={selectedGroup} onActivityLogged={() => {
+              // Refresh the calendar when a new activity is logged
+              const calendarComponent = document.querySelector('.rbc-calendar');
+              if (calendarComponent) {
+                calendarComponent.dispatchEvent(new Event('refreshCalendar'));
+              }
+            }} />
           )}
           
           {selectedGroup && (

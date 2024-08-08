@@ -21,10 +21,6 @@ export default function Navbar() {
             {status === 'authenticated' ? (
               <>
                 <Link href="/dashboard" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300">Dashboard</Link>
-                {session.user.role === 'staff' && (
-                  <Link href="/log" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300">Log Activity</Link>
-                )}
-                
                 <button onClick={() => signOut()} className="py-2 px-2 font-medium text-white bg-green-500 rounded hover:bg-green-400 transition duration-300">Log Out</button>
               </>
             ) : (
