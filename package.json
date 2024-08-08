@@ -17,13 +17,16 @@
     "eslint": "8.45.0",
     "eslint-config-next": "13.4.12",
     "link": "^1.5.1",
+    "mysql2": "^3.11.0",
     "next": "13.4.12",
     "page": "^1.11.6",
     "postcss": "8.4.27",
     "react": "18.2.0",
     "react-calendar": "^4.6.0",
     "react-dom": "18.2.0",
+    "react-live-clock": "^6.1.22",
     "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "ui": "^0.2.4"
   }
 }
