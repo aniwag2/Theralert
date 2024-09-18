@@ -72,7 +72,7 @@ export default function Login() {
           </button>
         </form>
         <p className="text-center mt-4">
-          Don't have an account?{' '}
+          Dont have an account?{' '}
           <Link href="/register" className="text-blue-500 hover:text-blue-700">
             Register here
           </Link>
