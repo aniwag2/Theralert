@@ -37,14 +37,14 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role; // `role` is now safely accessible
+        token.role = user.role; // Ensure `role` is set on the token
       }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
-        session.user.role = token.role || '';
-        session.user.id = parseInt(token.sub || '0', 10); // `sub` stores the user ID as a string
+        session.user.role = token.role ?? ''; // Use `??` to handle `undefined` safely
+        session.user.id = parseInt(token.sub ?? '0', 10); // Use `??` for `token.sub` fallback
       }
       return session;
     },
