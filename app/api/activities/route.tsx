@@ -3,7 +3,8 @@ import { query } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/authOptions';
 
-export async function POST(request) {
+// POST method to log an activity
+export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'staff') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +23,8 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
+// GET method to retrieve activities
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
