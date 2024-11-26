@@ -1,16 +1,16 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth'
+import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { query } from '@/lib/db'
 import bcrypt from 'bcrypt'
 
-export const authOptions = {
+const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -25,12 +25,12 @@ export const authOptions = {
             id: user.id, 
             name: user.name, 
             email: user.email, 
-            role: user.role 
+            role: user.role,
           }
         }
         return null
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -45,7 +45,7 @@ export const authOptions = {
         session.user.id = token.sub
       }
       return session
-    }
+    },
   },
   pages: {
     signIn: '/login',
