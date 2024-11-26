@@ -13,7 +13,7 @@ export default function Log() {
   const [activity, setActivity] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await fetch('/api/activities', {
@@ -23,11 +23,11 @@ export default function Log() {
         },
         body: JSON.stringify({ patientId, activity, description }),
       });
-      
+  
       if (!response.ok) {
         throw new Error('Failed to log activity');
       }
-
+  
       const data = await response.json();
       console.log(data.message);
       // TODO: Handle successful submission (e.g., show a success message, clear the form)
