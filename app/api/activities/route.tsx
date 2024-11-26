@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
   // Ensure session and user role validation
-  if (!session || !session.user || session.user.role !== 'staff') {
+  if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
