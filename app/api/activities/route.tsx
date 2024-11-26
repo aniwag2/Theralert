@@ -3,10 +3,11 @@ import { query } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/authOptions';
 
-// POST method to log an activity
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'staff') {
+  
+  // Ensure session and session.user are both defined
+  if (!session || !session.user || session.user.role !== 'staff') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -23,10 +24,11 @@ export async function POST(request: Request) {
   }
 }
 
-// GET method to retrieve activities
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+
+  // Ensure session is defined
+  if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
