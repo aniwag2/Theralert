@@ -1,59 +1,9 @@
-// app/api/auth/[...nextauth]/route.ts
-import NextAuth, { AuthOptions } from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import { query } from '@/lib/db'
-import bcrypt from 'bcrypt'
+// Import NextAuth and the separated authOptions
+import NextAuth from 'next-auth';
+import { authOptions } from '../authOptions';
 
-export const authOptions: AuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
+// Initialize NextAuth with the provided authOptions
+const handler = NextAuth(authOptions);
 
-        const users = await query('SELECT * FROM users WHERE email = ?', [credentials.email])
-        const user = users[0]
-
-        if (user && await bcrypt.compare(credentials.password, user.password)) {
-          return { 
-            id: user.id, 
-            name: user.name, 
-            email: user.email, 
-            role: user.role,
-          }
-        }
-        return null
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session?.user) {
-        session.user.role = token.role
-        session.user.id = token.sub
-      }
-      return session
-    },
-  },
-  pages: {
-    signIn: '/login',
-  },
-  debug: process.env.NODE_ENV === 'development',
-}
-
-const handler = NextAuth(authOptions)
-
-// Export both route handlers and `authOptions`
-export { handler as GET, handler as POST, authOptions }
+// Export the HTTP methods
+export { handler as GET, handler as POST };
