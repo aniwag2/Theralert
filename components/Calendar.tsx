@@ -5,12 +5,12 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 interface ActivityCalendarProps {
-  groupId: string | number
+  groupId: string | number;
 }
 
 const localizer = momentLocalizer(moment);
 
-export function ActivityCalendar({ groupId }) {
+export function ActivityCalendar({ groupId }: ActivityCalendarProps) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export function ActivityCalendar({ groupId }) {
         const response = await fetch(`/api/activities?groupId=${groupId}`);
         if (response.ok) {
           const activities = await response.json();
-          const formattedEvents = activities.map(activity => ({
+          const formattedEvents = activities.map((activity: any) => ({
             title: activity.activity,
             start: new Date(activity.created_at),
             end: new Date(activity.created_at),
