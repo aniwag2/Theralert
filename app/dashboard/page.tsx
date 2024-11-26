@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 'use client'
 
 import { useSession } from 'next-auth/react'
@@ -7,16 +6,21 @@ import { ActivityForm } from '@/components/ActivityForm'
 import { ActivityCalendar } from '@/components/Calendar'
 import { CreateGroupForm } from '@/components/CreateGroupForm'
 
+interface Group {
+  id: number;
+  name?: string; // Add other properties as needed
+}
+
 export default function Dashboard() {
   const { data: session, status } = useSession()
-  const [groups, setGroups] = useState([])
+  const [groups, setGroups] = useState<Group[]>([]) // Define the state with the Group[] type
   const [selectedGroup, setSelectedGroup] = useState<string | number | null>(null)
 
   const fetchGroups = async () => {
     try {
       const response = await fetch('/api/groups')
       if (response.ok) {
-        const fetchedGroups = await response.json()
+        const fetchedGroups: Group[] = await response.json()
         setGroups(fetchedGroups)
         if (fetchedGroups.length > 0 && !selectedGroup) {
           setSelectedGroup(fetchedGroups[0].id)
