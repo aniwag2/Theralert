@@ -43,7 +43,7 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (session?.user) {
-        session.user.role = token.role ?? ''; // Use `??` to handle `undefined` safely
+        //session.user.role = token.role ?? ''; // Use `??` to handle `undefined` safely
         session.user.id = parseInt(token.sub ?? '0', 10); // Use `??` for `token.sub` fallback
       }
       return session;
