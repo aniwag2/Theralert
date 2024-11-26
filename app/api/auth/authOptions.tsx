@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { AuthOptions } from 'next-auth';
 import { RowDataPacket } from 'mysql2';
+import { JWT } from 'next-auth/jwt';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -43,7 +44,7 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       if (session?.user) {
         session.user.role = token.role ?? ''; // Use `??` to handle `undefined` safely
         session.user.id = parseInt(token.sub ?? '0', 10); // Use `??` for `token.sub` fallback
