@@ -8,14 +8,14 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = await signIn('credentials', {
       redirect: false,
       email,
       password,
     });
-    if (result.ok) {
+    if (result?.ok) {
       router.push('/dashboard');
     } else {
       // Handle error
@@ -24,8 +24,18 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <input 
+        type="email" 
+        value={email} 
+        onChange={(e) => setEmail(e.target.value)} 
+        required 
+      />
+      <input 
+        type="password" 
+        value={password} 
+        onChange={(e) => setPassword(e.target.value)} 
+        required 
+      />
       <button type="submit">Log In</button>
     </form>
   );
