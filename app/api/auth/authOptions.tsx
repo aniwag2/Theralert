@@ -8,22 +8,25 @@ export const authOptions: AuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const users = await query('SELECT * FROM users WHERE email = ?', [credentials.email]);
+        const users = await query(
+          'SELECT id, name, email, password, role FROM users WHERE email = ?',
+          [credentials.email]
+        );
         const user = users[0];
 
         if (user && await bcrypt.compare(credentials.password, user.password)) {
           return { 
-            id: user.id, 
-            name: user.name, 
-            email: user.email, 
+            id: user.id,
+            name: user.name,
+            email: user.email,
             role: user.role,
           };
         }
@@ -34,14 +37,14 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.role = user.role; // `role` is now safely accessible
       }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
-        session.user.role = token.role;
-        session.user.id = token.sub;
+        session.user.role = token.role || '';
+        session.user.id = parseInt(token.sub || '0', 10); // `sub` stores the user ID as a string
       }
       return session;
     },
