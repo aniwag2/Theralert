@@ -28,9 +28,9 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-
+    e.preventDefault();
+    setError('');
+  
     try {
       const response = await fetch('/api/groups', {
         method: 'POST',
@@ -38,20 +38,24 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ patientEmail, familyEmails: familyEmails.filter(email => email !== '') }),
-      })
-
+      });
+  
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create group')
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create group');
       }
-
-      setPatientEmail('')
-      setFamilyEmails([''])
-      onGroupCreated()
+  
+      setPatientEmail('');
+      setFamilyEmails(['']);
+      onGroupCreated();
     } catch (error) {
-      setError(error.message)
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white rounded shadow">
