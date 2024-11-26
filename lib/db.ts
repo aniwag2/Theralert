@@ -1,4 +1,4 @@
-import mysql, { ResultSetHeader } from 'mysql2/promise';
+import mysql, { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2/promise';
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -7,9 +7,13 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
-export async function query<T = any>(sql: string, params?: any[]): Promise<T> {
+// Constrain T to the valid query result types from mysql2
+export async function query<T extends RowDataPacket[] | ResultSetHeader | OkPacket>(
+  sql: string,
+  params?: any[]
+): Promise<T> {
   const [results] = await pool.execute<T>(sql, params);
   return results;
 }
 
-export type { ResultSetHeader };
+export type { ResultSetHeader, RowDataPacket, OkPacket };
