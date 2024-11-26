@@ -4,7 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { query } from '@/lib/db'
 import bcrypt from 'bcrypt'
 
-const authOptions: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -54,4 +54,6 @@ const authOptions: AuthOptions = {
 }
 
 const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+
+// Export both route handlers and `authOptions`
+export { handler as GET, handler as POST, authOptions }
