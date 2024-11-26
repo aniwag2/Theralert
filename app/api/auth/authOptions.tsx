@@ -2,6 +2,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { query } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { AuthOptions } from 'next-auth';
+import { RowDataPacket } from 'mysql2';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -16,11 +17,12 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        const users = await query(
+        // Explicitly type the query result as an array of RowDataPacket
+        const users = await query<RowDataPacket[]>(
           'SELECT id, name, email, password, role FROM users WHERE email = ?',
           [credentials.email]
         );
-        const user = users[0];
+        const user = users[0]; // Now TypeScript knows users is an array
 
         if (user && await bcrypt.compare(credentials.password, user.password)) {
           return { 
