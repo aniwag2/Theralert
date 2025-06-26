@@ -6,6 +6,13 @@ import { useSession, signOut } from 'next-auth/react'
 export default function Navbar() {
   const { data: session, status } = useSession()
 
+  // Handler for the logout button
+  const handleLogout = async () => {
+    // Call signOut and explicitly tell it to redirect to the /login page
+    // The signOut function itself will handle the navigation and session clearing
+    await signOut({ callbackUrl: '/login' });
+  };
+
   return (
     <nav className="bg-white shadow-lg">
       <div className="max-w-6xl mx-auto px-4">
@@ -21,12 +28,18 @@ export default function Navbar() {
             {status === 'authenticated' ? (
               <>
                 <Link href="/dashboard" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300">Dashboard</Link>
-                <a href="/">
-                  <button onClick={() => signOut()} className="py-2 px-2 font-medium text-white bg-green-500 rounded hover:bg-green-400 transition duration-300">Log Out</button>
-                </a>
+                {/* New: Link to Profile Page */}
+                <Link href="/profile" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-green-500 hover:text-white transition duration-300">Profile</Link>
+                {/* Removed the <a> tag and used a simple button with onClick handler */}
+                <button
+                  onClick={handleLogout}
+                  className="py-2 px-2 font-medium text-white bg-green-500 rounded hover:bg-green-400 transition duration-300 transform transition-all duration-200 hover:scale-105"
+                >
+                  Log Out
+                </button>
               </>
             ) : (
-              <Link href="/login" className="py-2 px-2 font-medium text-white bg-green-500 rounded hover:bg-green-400 transition duration-300">Log In</Link>
+              <Link href="/login" className="py-2 px-2 font-medium text-white bg-green-500 rounded hover:bg-green-400 transition duration-300 transform transition-all duration-200 hover:scale-105">Log In</Link>
             )}
           </div>
         </div>
