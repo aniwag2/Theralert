@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  theralert-app:
+    # Use 'image' to pull a pre-built image from a registry.
+    # Replace 'yourusername' with your actual Docker Hub/registry username.
+    # It's good practice to use a specific version tag instead of 'latest' for stability.
+    image: yourusername/theralert-app:latest
+    container_name: theralert-app
+    ports:
+      - "3000:3000" # Host port:Container port (Next.js default)
+    environment:
+      # These environment variables will be passed into the container
+      # They will be read from the .env file on the host.
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: production
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_SERVER: ${EMAIL_SERVER} # Optional, if you added it to your .env
+      # Add any other environment variables your application requires
+    depends_on:
+      - db # This ensures the database starts before the Next.js app
+    restart: unless-stopped # Always restart unless explicitly stopped
+
+  db:
+    # Using MySQL 8.0 for stability. Avoid 'latest' in production.
+    image: mysql:8.0
+    container_name: theralert-db
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Essential for initial setup
+    volumes:
+      - theralert_db_data:/var/lib/mysql # Persist database data
+    restart: unless-stopped
+    # Optional: Map a port if you want to access MySQL from your host machine
+    # - "3306:3306" # Host port:Container port. Be careful if host 3306 is already used.
+
+volumes:
+  theralert_db_data: # Defines the named volume for MySQL data persistence
