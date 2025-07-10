@@ -31,7 +31,8 @@ ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # Install necessary tools as root
-RUN apk add --no-cache mysql-client bash openssl
+# CHANGE: Use mariadb-client instead of mysql-client
+RUN apk add --no-cache mariadb-client bash openssl
 
 # Download wait-for-it.sh and make it executable AS ROOT
 # This step must come *before* switching to the 'nextjs' user
