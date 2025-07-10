@@ -12,7 +12,6 @@ services:
       NODE_ENV: production
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
-      EMAIL_SERVER: ${EMAIL_SERVER} # Optional
 
       # Explicitly pass these individual DB variables to the Next.js app
       # The 'host' will be the service name of your database container
