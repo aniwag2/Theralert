@@ -11,14 +11,15 @@ echo "Waiting for MySQL database at db:3306 to be ready..."
 echo "Applying database schema from /app/schema.sql..."
 
 # Execute the schema.sql file against the database.
-# Add --ssl-mode=DISABLED to bypass SSL verification for this specific connection.
-mysql -h db -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} --ssl-mode=DISABLED < /app/schema.sql
+# Use --ssl-verify-server-cert=0 to bypass SSL certificate verification.
+# This is a common alternative for older 'mysql' client versions or MariaDB clients.
+mysql -h db -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} --ssl-verify-server-cert=0 < /app/schema.sql
 
 if [ $? -eq 0 ]; then
   echo "Database schema applied successfully."
 else
   echo "Error applying database schema. Exiting."
-  exit 1
+  exit 1 # Exit with an error code to stop the container from looping
 fi
 
 echo "Starting Next.js application..."
