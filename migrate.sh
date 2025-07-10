@@ -11,9 +11,9 @@ echo "Waiting for MySQL database at db:3306 to be ready..."
 echo "Applying database schema from /app/schema.sql..."
 
 # Execute the schema.sql file against the database.
-# Use --ssl-verify-server-cert=0 to bypass SSL certificate verification.
-# This is a common alternative for older 'mysql' client versions or MariaDB clients.
-mysql -h db -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} --ssl-verify-server-cert=0 < /app/schema.sql
+# Add --ssl-verify-server-cert=0 to bypass SSL certificate verification (if still needed).
+# Add --default-auth=mysql_native_password to explicitly tell the client which plugin to use.
+mysql -h db -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} --ssl-verify-server-cert=0 --default-auth=mysql_native_password < /app/schema.sql
 
 if [ $? -eq 0 ]; then
   echo "Database schema applied successfully."
