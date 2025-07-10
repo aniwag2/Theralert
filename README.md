@@ -15,7 +15,7 @@ Before you begin, ensure you have the following installed on your server:
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/aniwag2/Theralert.git](https://github.com/aniwag2/Theralert.git)
+    git clone https://github.com/aniwag2/Theralert.git
     cd Theralert
     ```
 
