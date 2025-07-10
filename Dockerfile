@@ -31,11 +31,10 @@ ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # Install necessary tools as root
-# CHANGE: Use mariadb-client instead of mysql-client
-RUN apk add --no-cache mariadb-client bash openssl
+# Key Change: Add mariadb-connector-c-dev to provide caching_sha2_password.so
+RUN apk add --no-cache mysql-client bash openssl mariadb-connector-c-dev
 
 # Download wait-for-it.sh and make it executable AS ROOT
-# This step must come *before* switching to the 'nextjs' user
 RUN wget -q https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O /usr/bin/wait-for-it.sh && \
     chmod +x /usr/bin/wait-for-it.sh
 
@@ -53,7 +52,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --chown=nextjs:nodejs migrate.sh /app/migrate.sh
 COPY --chown=nextjs:nodejs schema.sql /app/schema.sql
 
-# Make the migration script executable (already owned by nextjs, so this is fine)
+# Make the migration script executable
 RUN chmod +x /app/migrate.sh
 
 EXPOSE 3000
