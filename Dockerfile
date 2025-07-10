@@ -1,51 +1,60 @@
-# Stage 1: Install dependencies and build the application
+# Stage 1: Install dependencies and build the Next.js application
 FROM node:20-alpine AS builder
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /app
 
 # Copy package.json and lock files
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN npm install --frozen-lockfile
+# Install dependencies based on lock file presence
+RUN \
+  if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; \
+  else npm install --frozen-lockfile; \
+  fi
 
 # Copy the rest of the application code
 COPY . .
 
-# Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Build the Next.js application
-# The `output: 'standalone'` in next.config.js will create the .next/standalone folder
+# Build the Next.js application for production
 RUN npm run build
 
-# Stage 2: Create the production image
+# Stage 2: Create the lean production image
 FROM node:20-alpine AS runner
 
-# Set working directory
 WORKDIR /app
 
-# Set production environment
 ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1 # Disable telemetry in runtime too
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Add a non-root user for security
-# Next.js recommends running as a non-root user
+# Install necessary tools as root
+# Key Change: Add mariadb-connector-c-dev to provide caching_sha2_password.so
+RUN apk add --no-cache mysql-client bash openssl mariadb-connector-c-dev
+
+# Download wait-for-it.sh and make it executable AS ROOT
+RUN wget -q https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O /usr/bin/wait-for-it.sh && \
+    chmod +x /usr/bin/wait-for-it.sh
+
+# Now create the non-root user and switch to it
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
-# Copy the standalone output, public, and static files
-# The `standalone` output doesn't copy public or .next/static by default,
-# as these are often served by a CDN, but for self-hosting, we copy them manually.
+# Copy the built Next.js application from the builder stage with correct ownership
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Expose the port Next.js listens on (default is 3000)
+# Copy the migration script and the SQL schema file with correct ownership
+COPY --chown=nextjs:nodejs migrate.sh /app/migrate.sh
+COPY --chown=nextjs:nodejs schema.sql /app/schema.sql
+
+# Make the migration script executable
+RUN chmod +x /app/migrate.sh
+
 EXPOSE 3000
 
-# Command to run the Next.js server
-# next start cannot be used with output: 'standalone'
-CMD ["node", "server.js"]
+CMD ["/app/migrate.sh"]

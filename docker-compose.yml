@@ -2,42 +2,41 @@ version: '3.8'
 
 services:
   theralert:
-    # Use 'image' to pull a pre-built image from a registry.
-    # Replace 'yourusername' with your actual Docker Hub/registry username.
-    # It's good practice to use a specific version tag instead of 'latest' for stability.
     image: awaghray/theralert:latest
     container_name: theralert
     ports:
-      - "3000:3000" # Host port:Container port (Next.js default)
+      - "3000:3000"
     environment:
-      # These environment variables will be passed into the container
-      # They will be read from the .env file on the host.
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: production
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
-      EMAIL_SERVER: ${EMAIL_SERVER} # Optional, if you added it to your .env
-      # Add any other environment variables your application requires
+
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
     depends_on:
-      - db # This ensures the database starts before the Next.js app
-    restart: unless-stopped # Always restart unless explicitly stopped
+      - db
+    restart: unless-stopped
 
   db:
-    # Using MySQL 8.0 for stability. Avoid 'latest' in production.
     image: mysql:8.0
     container_name: theralert-db
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Essential for initial setup
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      # IMPORTANT: Set default authentication plugin for new users to mysql_native_password
+      # This resolves compatibility issues with older MySQL clients like the one in Alpine's mysql-client package.
+      # This is suitable for internal Docker network connections.
+      MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password # <--- NEW LINE
     volumes:
-      - theralert_db_data:/var/lib/mysql # Persist database data
+      - theralert_db_data:/var/lib/mysql
     restart: unless-stopped
-    # Optional: Map a port if you want to access MySQL from your host machine
-    # - "3306:3306" # Host port:Container port. Be careful if host 3306 is already used.
 
 volumes:
-  theralert_db_data: # Defines the named volume for MySQL data persistence
+  theralert_db_data:
