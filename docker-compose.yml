@@ -13,12 +13,10 @@ services:
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
 
-      # Explicitly pass these individual DB variables to the Next.js app
-      # The 'host' will be the service name of your database container
-      DB_HOST: db # <--- NEW: Points to the 'db' service
-      DB_USER: ${DB_USER} # <--- NEW: Read from .env
-      DB_PASSWORD: ${DB_PASSWORD} # <--- NEW: Read from .env
-      DB_NAME: ${DB_NAME} # <--- NEW: Read from .env
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
 
     depends_on:
       - db
@@ -32,6 +30,10 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      # IMPORTANT: Set default authentication plugin for new users to mysql_native_password
+      # This resolves compatibility issues with older MySQL clients like the one in Alpine's mysql-client package.
+      # This is suitable for internal Docker network connections.
+      MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password # <--- NEW LINE
     volumes:
       - theralert_db_data:/var/lib/mysql
     restart: unless-stopped
