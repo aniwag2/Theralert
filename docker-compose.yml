@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  theralert-app:
+  theralert:
     # Use 'image' to pull a pre-built image from a registry.
     # Replace 'yourusername' with your actual Docker Hub/registry username.
     # It's good practice to use a specific version tag instead of 'latest' for stability.
-    image: yourusername/theralert-app:latest
-    container_name: theralert-app
+    image: awaghray/theralert:latest
+    container_name: theralert
     ports:
       - "3000:3000" # Host port:Container port (Next.js default)
     environment:
