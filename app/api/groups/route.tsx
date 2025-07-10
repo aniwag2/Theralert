@@ -26,8 +26,9 @@ export async function POST(req: Request) {
     const patientId = patients[0].id;
 
     // Create the group
+    // FIX: Add backticks around `groups` table name
     const result = await query<ResultSetHeader>(
-      'INSERT INTO groups (patient_id, staff_id) VALUES (?, ?)',
+      'INSERT INTO `groups` (patient_id, staff_id) VALUES (?, ?)',
       [patientId, session.user.id]
     );
     const groupId = result.insertId;
@@ -53,8 +54,9 @@ export async function POST(req: Request) {
       }
 
       // Add family member to group
+      // FIX: Add backticks around `group_members` table name (though `group_members` isn't reserved, it's good practice for consistency or if it ever becomes one)
       await query<ResultSetHeader>(
-        'INSERT INTO group_members (group_id, user_id) VALUES (?, ?)',
+        'INSERT INTO `group_members` (group_id, user_id) VALUES (?, ?)',
         [groupId, familyMemberId]
       );
     }
@@ -76,15 +78,17 @@ export async function GET(req: Request) {
   try {
     let groups;
     if (session.user.role === 'staff') {
+      // FIX: Add backticks around `groups` table name
       groups = await query<RowDataPacket[]>(
-        'SELECT * FROM groups WHERE staff_id = ?',
+        'SELECT * FROM `groups` WHERE staff_id = ?',
         [session.user.id]
       );
     } else {
+      // FIX: Add backticks around `groups` table name in the JOIN
       groups = await query<RowDataPacket[]>(
         `
-        SELECT g.* FROM groups g
-        LEFT JOIN group_members gm ON g.id = gm.group_id
+        SELECT g.* FROM \`groups\` g
+        LEFT JOIN \`group_members\` gm ON g.id = gm.group_id
         WHERE g.patient_id = ? OR gm.user_id = ?
         `,
         [session.user.id, session.user.id]
