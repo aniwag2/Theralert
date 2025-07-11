@@ -16,14 +16,29 @@ export async function POST(request: Request) {
     const { groupId, activity, description } = await request.json();
 
     // Execute the INSERT query and type result as ResultSetHeader
-    const result = await query<ResultSetHeader>(
+    const insertResult = await query<ResultSetHeader>(
       'INSERT INTO activities (group_id, activity, description) VALUES (?, ?, ?)',
       [groupId, activity, description]
     );
 
-    // Return success response with the newly inserted record ID
+    const newActivityId = insertResult.insertId;
+
+    // After inserting, fetch the complete new activity record to return it
+    const newActivities = await query(
+      'SELECT id, group_id, activity, description, created_at FROM activities WHERE id = ?',
+      [newActivityId]
+    );
+
+    const newActivity = newActivities[0];
+
+    if (!newActivity) {
+      // This should ideally not happen if insert was successful
+      throw new Error('Failed to retrieve newly created activity.');
+    }
+
+    // Return success response with the newly inserted record
     return NextResponse.json(
-      { message: 'Activity logged successfully', id: result.insertId },
+      { message: 'Activity logged successfully', activity: newActivity },
       { status: 201 }
     );
   } catch (error) {
@@ -46,8 +61,9 @@ export async function GET(request: Request) {
 
   try {
     // Retrieve activities based on groupId
+    // Ordering by created_at DESC to get most recent first
     const activities = await query(
-      'SELECT * FROM activities WHERE group_id = ? ORDER BY created_at DESC',
+      'SELECT id, group_id, activity, description, created_at FROM activities WHERE group_id = ? ORDER BY created_at DESC',
       [groupId]
     );
 
