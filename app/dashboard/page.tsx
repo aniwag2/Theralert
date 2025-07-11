@@ -149,7 +149,7 @@ export default function DashboardPage() {
   // Handle actual group deletion
   const handleDeleteGroup = async () => {
     if (!groupToDelete || deleteConfirmationInput !== `DELETE GROUP ${groupToDelete.id}`) {
-      setDeleteError(`Please type "DELETE GROUP ${groupToDelete?.id}" to confirm.`);
+      setDeleteError(`Please type &quot;DELETE GROUP ${groupToDelete?.id}&quot; to confirm.`);
       return;
     }
 
@@ -166,7 +166,7 @@ export default function DashboardPage() {
         throw new Error(errorData.error || 'Failed to delete group.');
       }
 
-      setBannerMessage(`Group "${groupToDelete.patient_name}" (ID: ${groupToDelete.id}) deleted successfully!`);
+      setBannerMessage(`Group &quot;${groupToDelete.patient_name}&quot; (ID: ${groupToDelete.id}) deleted successfully!`);
       setBannerType('success');
       setShowBanner(true);
       setTimeout(() => { setShowBanner(false); setBannerMessage(''); }, 5000);
@@ -248,8 +248,8 @@ export default function DashboardPage() {
             {userRole === 'staff' && (
               <Button
                 variant="destructive"
-                onClick={handleInitiateDeleteSelectedGroup} // New handler for the button next to dropdown
-                disabled={!selectedGroupId} // Disable if no group is selected
+                onClick={handleInitiateDeleteSelectedGroup}
+                disabled={!selectedGroupId}
                 className="ml-4 px-4 py-2 rounded-lg"
               >
                 Delete Selected Group
@@ -301,9 +301,9 @@ export default function DashboardPage() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-red-700">Confirm Group Deletion</DialogTitle>
             <DialogDescription className="text-gray-600">
-              This action cannot be undone. This will permanently delete group "<strong>{groupToDelete?.patient_name}</strong>" (ID: {groupToDelete?.id}) and all associated activities.
+              This action cannot be undone. This will permanently delete group &quot;<strong>{groupToDelete?.patient_name}</strong>&quot; (ID: {groupToDelete?.id}) and all associated activities.
               <br/><br/>
-              To confirm, please type "<strong>DELETE GROUP {groupToDelete?.id}</strong>" in the box below.
+              To confirm, please type &quot;<strong>DELETE GROUP {groupToDelete?.id}</strong>&quot; in the box below.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
