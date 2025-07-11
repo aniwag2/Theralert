@@ -5,6 +5,12 @@ import { authOptions } from '../auth/authOptions';
 import nodemailer from 'nodemailer'; // Import nodemailer
 import { RowDataPacket } from 'mysql2'; // Import RowDataPacket
 
+// Define a custom interface for group members that extends RowDataPacket
+interface GroupMemberRow extends RowDataPacket {
+  email: string;
+  role: string;
+}
+
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -48,7 +54,8 @@ export async function POST(request: Request) {
 
     // 3. Fetch all members (patient and family) for the given group
     // This query joins groups, users (for patient), and group_members (for family)
-    const groupMembers = await query<{ email: string, role: string }[]>(
+    // Use the custom GroupMemberRow interface here
+    const groupMembers = await query<GroupMemberRow[]>(
       `
       SELECT u.email, u.role
       FROM users u
