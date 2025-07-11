@@ -5,8 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCalendar } from '@/components/Calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Assuming you have these UI components
-import { CreateGroupForm } from '@/components/CreateGroupForm'; // Import the CreateGroupForm
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CreateGroupForm } from '@/components/CreateGroupForm';
 
 // Define the structure of an activity object returned from the API
 interface Activity {
@@ -17,11 +17,12 @@ interface Activity {
   created_at: string; // ISO string date
 }
 
-// Define the structure of a group object
+// Define the updated structure of a group object to include patient_name
 interface Group {
   id: number;
   patient_id: number;
   staff_id: number;
+  patient_name: string; // Added patient_name
   // Add other group properties if they exist in your database
 }
 
@@ -33,7 +34,7 @@ export default function DashboardPage() {
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState<'success' | 'error'>('success');
   const [newlyLoggedActivity, setNewlyLoggedActivity] = useState<Activity | null>(null);
-  const [refreshCalendar, setRefreshCalendar] = useState(false); // State to trigger full calendar refresh
+  const [refreshCalendar, setRefreshCalendar] = useState(false);
 
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -59,8 +60,8 @@ export default function DashboardPage() {
       if (response.ok) {
         const groups: Group[] = await response.json();
         setUserGroups(groups);
-        if (groups.length > 0 && !selectedGroupId) { // Only set default if no group is already selected
-          setSelectedGroupId(groups[0].id.toString()); // Select the first group by default
+        if (groups.length > 0 && !selectedGroupId) {
+          setSelectedGroupId(groups[0].id.toString());
         }
       } else {
         const errorData = await response.json();
@@ -72,30 +73,27 @@ export default function DashboardPage() {
     } finally {
       setGroupsLoading(false);
     }
-  }, [status, selectedGroupId]); // Re-fetch when authentication status changes or selectedGroupId changes
+  }, [status, selectedGroupId]);
 
   // Effect to fetch groups initially and when a new group is created
   useEffect(() => {
     fetchGroups();
-  }, [fetchGroups]); // Dependency on fetchGroups useCallback
+  }, [fetchGroups]);
 
   // Handle activity logging from ActivityForm
   const handleActivityLogged = (activity: Activity, message: string) => {
-    setNewlyLoggedActivity(activity); // Pass the new activity to the calendar
+    setNewlyLoggedActivity(activity);
     setBannerMessage(message);
     setBannerType('success');
     setShowBanner(true);
 
-    // Hide banner after 5 seconds
     setTimeout(() => {
       setShowBanner(false);
       setBannerMessage('');
     }, 5000);
 
-    // Trigger a full refresh of the calendar data after a short delay
-    // This ensures consistency, especially if the new activity wasn't immediately picked up
     setTimeout(() => {
-      setRefreshCalendar(prev => !prev); // Toggle to trigger useEffect in Calendar
+      setRefreshCalendar(prev => !prev);
     }, 100);
   };
 
@@ -165,13 +163,14 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <label htmlFor="group-select" className="text-gray-700 font-semibold">Select Group for Activities:</label>
             <Select onValueChange={setSelectedGroupId} value={selectedGroupId || ''}>
-              <SelectTrigger id="group-select" className="w-[200px] rounded-lg shadow-sm border-gray-300">
+              <SelectTrigger id="group-select" className="w-[250px] rounded-lg shadow-sm border-gray-300"> {/* Increased width */}
                 <SelectValue placeholder="Select a group" />
               </SelectTrigger>
               <SelectContent className="rounded-lg shadow-lg">
                 {userGroups.map((group) => (
                   <SelectItem key={group.id} value={group.id.toString()}>
-                    Group ID: {group.id} (Patient: {group.patient_id}) {/* You might want to display more meaningful group names */}
+                    {/* Display Patient Name as the group name */}
+                    Patient: {group.patient_name} (Group ID: {group.id})
                   </SelectItem>
                 ))}
               </SelectContent>
