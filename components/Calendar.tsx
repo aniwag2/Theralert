@@ -137,7 +137,8 @@ export function ActivityCalendar({ groupId, newActivity, triggerRefresh }: Activ
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium text-gray-700">Description:</label>
-              <p className="col-span-3 text-gray-800">{selectedEvent?.desc || 'No description provided.'}</p>
+              {/* Added whitespace-normal and break-words for text wrapping */}
+              <p className="col-span-3 text-gray-800 whitespace-normal break-words">{selectedEvent?.desc || 'No description provided.'}</p>
             </div>
           </div>
           <Button onClick={handleCloseModal} className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
