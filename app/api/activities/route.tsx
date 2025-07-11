@@ -3,6 +3,7 @@ import { query, ResultSetHeader } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/authOptions';
 import nodemailer from 'nodemailer'; // Import nodemailer
+import { RowDataPacket } from 'mysql2'; // Import RowDataPacket
 
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -33,7 +34,8 @@ export async function POST(request: Request) {
     const newActivityId = insertResult.insertId;
 
     // 2. Fetch the complete new activity record
-    const newActivities = await query(
+    // Explicitly cast the result to RowDataPacket[]
+    const newActivities = await query<RowDataPacket[]>(
       'SELECT id, group_id, activity, description, created_at FROM activities WHERE id = ?',
       [newActivityId]
     );
