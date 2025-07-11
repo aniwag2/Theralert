@@ -7,6 +7,10 @@ import { ActivityForm } from '@/components/ActivityForm';
 import { ActivityCalendar } from '@/components/Calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateGroupForm } from '@/components/CreateGroupForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
 
 // Define the structure of an activity object returned from the API
 interface Activity {
@@ -34,12 +38,18 @@ export default function DashboardPage() {
   const [bannerMessage, setBannerMessage] = useState('');
   const [bannerType, setBannerType] = useState<'success' | 'error'>('success');
   const [newlyLoggedActivity, setNewlyLoggedActivity] = useState<Activity | null>(null);
-  const [refreshCalendar, setRefreshCalendar] = useState(false);
+  const [refreshCalendar, setRefreshCalendar] = useState(false); // State to trigger full calendar refresh
 
   const [userGroups, setUserGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [groupsError, setGroupsError] = useState<string | null>(null);
+
+  // State for group deletion confirmation
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<Group | null>(null); // Now stores the actual group object
+  const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
 
   // Redirect if not authenticated
@@ -60,8 +70,14 @@ export default function DashboardPage() {
       if (response.ok) {
         const groups: Group[] = await response.json();
         setUserGroups(groups);
-        if (groups.length > 0 && !selectedGroupId) {
-          setSelectedGroupId(groups[0].id.toString());
+        // If no group is selected, or the previously selected group was deleted, select the first available group
+        if (groups.length > 0) {
+          // If selectedGroupId is null or the selected group no longer exists, default to the first group
+          if (!selectedGroupId || !groups.some(g => g.id.toString() === selectedGroupId)) {
+            setSelectedGroupId(groups[0].id.toString());
+          }
+        } else {
+          setSelectedGroupId(null); // No groups available
         }
       } else {
         const errorData = await response.json();
@@ -109,6 +125,61 @@ export default function DashboardPage() {
     fetchGroups(); // Re-fetch groups to update the dropdown
   };
 
+  // Trigger confirmation dialog for the currently selected group
+  const handleInitiateDeleteSelectedGroup = () => {
+    if (selectedGroupId) {
+      const group = userGroups.find(g => g.id.toString() === selectedGroupId);
+      if (group) {
+        setGroupToDelete(group);
+        setDeleteConfirmationInput(''); // Clear previous input
+        setDeleteError(null); // Clear previous errors
+        setIsDeleteDialogOpen(true);
+      }
+    } else {
+      setDeleteError('Please select a group to delete.');
+      // Optionally show a temporary banner for this error
+      setBannerMessage('Please select a group to delete.');
+      setBannerType('error');
+      setShowBanner(true);
+      setTimeout(() => { setShowBanner(false); setBannerMessage(''); }, 5000);
+    }
+  };
+
+
+  // Handle actual group deletion
+  const handleDeleteGroup = async () => {
+    if (!groupToDelete || deleteConfirmationInput !== `DELETE GROUP ${groupToDelete.id}`) {
+      setDeleteError(`Please type "DELETE GROUP ${groupToDelete?.id}" to confirm.`);
+      return;
+    }
+
+    setDeleteError(null); // Clear any previous error
+    try {
+      const response = await fetch(`/api/groups/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId: groupToDelete.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete group.');
+      }
+
+      setBannerMessage(`Group "${groupToDelete.patient_name}" (ID: ${groupToDelete.id}) deleted successfully!`);
+      setBannerType('success');
+      setShowBanner(true);
+      setTimeout(() => { setShowBanner(false); setBannerMessage(''); }, 5000);
+
+      setIsDeleteDialogOpen(false); // Close the dialog
+      setGroupToDelete(null); // Clear the group to delete
+      fetchGroups(); // Re-fetch groups to update the list and dropdown
+    } catch (error: any) {
+      console.error('Error deleting group:', error);
+      setDeleteError(error.message || 'An unexpected error occurred during deletion.');
+    }
+  };
+
 
   if (status === 'loading' || groupsLoading) {
     return (
@@ -151,7 +222,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Group Selection */}
+      {/* Group Selection and Delete Button */}
       <div className="max-w-7xl mx-auto mb-8 bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Manage Groups</h2>
         {groupsError && (
@@ -163,18 +234,27 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <label htmlFor="group-select" className="text-gray-700 font-semibold">Select Group for Activities:</label>
             <Select onValueChange={setSelectedGroupId} value={selectedGroupId || ''}>
-              <SelectTrigger id="group-select" className="w-[250px] rounded-lg shadow-sm border-gray-300"> {/* Increased width */}
+              <SelectTrigger id="group-select" className="w-[250px] rounded-lg shadow-sm border-gray-300">
                 <SelectValue placeholder="Select a group" />
               </SelectTrigger>
               <SelectContent className="rounded-lg shadow-lg">
                 {userGroups.map((group) => (
-                  <SelectItem key={group.id} value={group.id.toString()}>
-                    {/* Display Patient Name as the group name */}
-                    Patient: {group.patient_name} (Group ID: {group.id})
+                  <SelectItem key={group.id} value={group.id.toString()} className="flex items-center justify-between">
+                    <span>Patient: {group.patient_name} (ID: {group.id})</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {userRole === 'staff' && (
+              <Button
+                variant="destructive"
+                onClick={handleInitiateDeleteSelectedGroup} // New handler for the button next to dropdown
+                disabled={!selectedGroupId} // Disable if no group is selected
+                className="ml-4 px-4 py-2 rounded-lg"
+              >
+                Delete Selected Group
+              </Button>
+            )}
           </div>
         ) : (
           <p className="text-center text-gray-600">No groups found for your account. Create one below!</p>
@@ -214,6 +294,47 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Group Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-lg shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-red-700">Confirm Group Deletion</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              This action cannot be undone. This will permanently delete group "<strong>{groupToDelete?.patient_name}</strong>" (ID: {groupToDelete?.id}) and all associated activities.
+              <br/><br/>
+              To confirm, please type "<strong>DELETE GROUP {groupToDelete?.id}</strong>" in the box below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {deleteError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span className="block sm:inline">{deleteError}</span>
+              </div>
+            )}
+            <Input
+              type="text"
+              value={deleteConfirmationInput}
+              onChange={(e) => setDeleteConfirmationInput(e.target.value)}
+              placeholder={`Type "DELETE GROUP ${groupToDelete?.id}" to confirm`}
+              className="w-full rounded-lg border-gray-300 focus:ring-red-500 focus:border-red-500"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="px-4 py-2 rounded-lg">
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteGroup}
+              disabled={deleteConfirmationInput !== `DELETE GROUP ${groupToDelete?.id}`}
+              className="px-4 py-2 rounded-lg"
+            >
+              Delete Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
