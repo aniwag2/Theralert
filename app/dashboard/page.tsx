@@ -19,6 +19,7 @@ interface Activity {
   activity: string;
   description: string;
   created_at: string; // ISO string date
+  isGoal?: boolean; // Added isGoal to Activity interface
 }
 
 // Define the updated structure of a group object to include patient_name
@@ -98,6 +99,7 @@ export default function DashboardPage() {
 
   // Handle activity logging from ActivityForm
   const handleActivityLogged = (activity: Activity, message: string) => {
+    // Pass the entire activity object (which now includes isGoal) to the calendar
     setNewlyLoggedActivity(activity);
     setBannerMessage(message);
     setBannerType('success');

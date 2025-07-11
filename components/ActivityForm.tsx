@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Clock from 'react-live-clock';
+import { Button } from '@/components/ui/button'; // Assuming Button component is available
 
 // Define the structure of an activity object returned from the API
 interface Activity {
@@ -11,19 +12,23 @@ interface Activity {
   activity: string;
   description: string;
   created_at: string; // ISO string date
+  isGoal?: boolean; // Added isGoal to the interface
 }
 
 interface ActivityFormProps {
   groupId: string | number;
-  // Modified onActivityLogged to accept the new activity data and a message
+  // Modified onActivityLogged to accept the new activity data and a message, and isGoal
   onActivityLogged: (newActivity: Activity, message: string) => void;
 }
 
 export function ActivityForm({ groupId, onActivityLogged }: ActivityFormProps) {
   const [activity, setActivity] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false); // New state for loading indicator
-  const [error, setError] = useState<string | null>(null); // New state for error messages
+  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [error, setError] = useState<string | null>(null); // State for error messages
+
+  // New state to track if the current submission is for a goal
+  const [currentIsGoal, setCurrentIsGoal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +41,8 @@ export function ActivityForm({ groupId, onActivityLogged }: ActivityFormProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ groupId, activity, description }),
+        // Pass the currentIsGoal state to the API
+        body: JSON.stringify({ groupId, activity, description, isGoal: currentIsGoal }),
       });
 
       if (!response.ok) {
@@ -49,13 +55,14 @@ export function ActivityForm({ groupId, onActivityLogged }: ActivityFormProps) {
 
       setActivity('');
       setDescription('');
-      // Pass the new activity and a success message to the parent
-      onActivityLogged(newActivity, 'Activity logged successfully!');
+      // Pass the new activity, a success message, and the isGoal flag to the parent
+      onActivityLogged(newActivity, `${currentIsGoal ? 'Goal' : 'Activity'} logged successfully!`);
     } catch (err: any) {
       console.error('Error logging activity:', err);
       setError(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false); // Set loading to false after completion
+      setCurrentIsGoal(false); // Reset isGoal state after submission
     }
   };
 
@@ -77,7 +84,7 @@ export function ActivityForm({ groupId, onActivityLogged }: ActivityFormProps) {
           )}
           <div>
             <label htmlFor="activity" className="block text-gray-700 text-sm font-bold mb-2">
-              Activity:
+              Activity/Goal Name:
             </label>
             <input
               type="text"
@@ -103,13 +110,24 @@ export function ActivityForm({ groupId, onActivityLogged }: ActivityFormProps) {
               disabled={loading}
             />
           </div>
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
-          >
-            {loading ? 'Logging...' : 'Log Activity'}
-          </button>
+          <div className="flex space-x-4 mt-4"> {/* Container for the two buttons */}
+            <Button
+              type="submit"
+              onClick={() => setCurrentIsGoal(false)} // Set isGoal to false for activity
+              className="flex-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              Log Activity
+            </Button>
+            <Button
+              type="submit"
+              onClick={() => setCurrentIsGoal(true)} // Set isGoal to true for goal
+              className="flex-1 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              Log Goal 🎉
+            </Button>
+          </div>
         </form>
       </div>
     </div>
