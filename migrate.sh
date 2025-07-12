@@ -10,17 +10,20 @@ echo "Waiting for MySQL database at db:3306 to be ready..."
 
 echo "Checking if database schema exists..."
 
-# Try to select from a key table (e.g., 'users').
-# If the table does not exist (or connection fails), this command will typically return a non-zero exit code.
-# We redirect stdout and stderr to /dev/null to keep the output clean.
-mariadb -h db --user="${DB_USER}" --password="${DB_PASSWORD}" --database="${DB_NAME}" -e "SELECT 1 FROM users LIMIT 1;" >/dev/null 2>&1
+# Query INFORMATION_SCHEMA to check for the existence of the 'users' table
+# This is more robust as it doesn't try to query data, just metadata.
+# We expect to get '1' if the table exists, and '0' if it doesn't.
+# We redirect stderr to /dev/null to hide connection errors, but keep stdout to capture the count.
+TABLE_EXISTS_COUNT=$(mariadb -h db --user="${DB_USER}" --password="${DB_PASSWORD}" --database="${DB_NAME}" -Nbe "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '${DB_NAME}' AND TABLE_NAME = 'users';" 2>/dev/null)
 
-# Check the exit code of the previous command
-if [ $? -ne 0 ]; then
+# Check the result of the count query.
+# If TABLE_EXISTS_COUNT is '1', the table exists.
+# If TABLE_EXISTS_COUNT is '0', the table does not exist.
+# If the mariadb command itself failed (e.g., connection issue), TABLE_EXISTS_COUNT might be empty or not '1'.
+# We check if it's explicitly '1' for success.
+if [ "$TABLE_EXISTS_COUNT" -ne 1 ]; then
     echo "Database schema not found (or table 'users' does not exist). Applying initial schema from /app/schema.sql..."
     # Execute the schema.sql file against the database using the 'mariadb' command.
-    # Keep --ssl-verify-server-cert=0 for robustness, although mariadb client might be more forgiving.
-    # Keep --default-auth=mysql_native_password for clarity and explicit plugin use.
     mariadb -h db --user="${DB_USER}" --password="${DB_PASSWORD}" --database="${DB_NAME}" --ssl-verify-server-cert=0 --default-auth=mysql_native_password < /app/schema.sql
 
     if [ $? -eq 0 ]; then
