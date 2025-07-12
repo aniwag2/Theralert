@@ -1,14 +1,13 @@
 # Theralert - Self-Hosting Guide
 
-This guide will walk you through setting up and running Theralert on your own server using Podman (or Docker) and Docker Compose.
+This guide will walk you through setting up and running Theralert on your own server using Docker and Docker Compose.
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your server:
 
-* **Podman** (recommended) or **Docker**
-* **Podman Compose** (if using Podman, install separately) or **Docker Compose** (comes with Docker Desktop, or install standalone if on Linux)
-    * For Podman Compose installation: `pip install podman-compose` (ensure `python3-pip` is installed)
+* **Docker**
+* **Docker Compose** (comes with Docker Desktop, or install standalone if on Linux)
 * **Git**
 
 ## Setup Steps
@@ -34,10 +33,6 @@ Before you begin, ensure you have the following installed on your server:
     Navigate to the root of the `Theralert` directory (where `docker-compose.yml` is located) and run:
 
     ```bash
-    # If using Podman Compose
-    podman-compose up -d
-
-    # If using Docker Compose (Docker Desktop or standalone install)
     # docker compose up -d
     ```
     * The `-d` flag runs the containers in detached mode (in the background).
@@ -45,10 +40,6 @@ Before you begin, ensure you have the following installed on your server:
 
 4.  **Verify Running Containers:**
     ```bash
-    # If using Podman
-    podman ps
-
-    # If using Docker
     # docker ps
     ```
     You should see `theralert-app` and `theralert-db` listed as running.
@@ -65,26 +56,21 @@ Before you begin, ensure you have the following installed on your server:
 
 * **Stop the application:**
     ```bash
-    # podman-compose down
     # docker compose down
     ```
 * **Restart the application (after changes or updates):**
     ```bash
-    # podman-compose restart
     # docker compose restart
     ```
 * **View logs:**
     ```bash
-    # podman-compose logs -f
     # docker compose logs -f
     # Or for a specific service:
-    # podman logs -f theralert-app
     # docker logs -f theralert-db
     ```
 * **Rebuild and update the application (after pulling new code):**
     ```bash
     git pull origin main # Or your main branch
-    # podman-compose build --no-cache && podman-compose up -d --force-recreate
     # docker compose build --no-cache && docker compose up -d --force-recreate
     ```
 
@@ -92,11 +78,3 @@ Before you begin, ensure you have the following installed on your server:
 
 * **Security:** Ensure `NEXTAUTH_SECRET` is truly random and strong. Keep your server's operating system updated.
 * **Data Persistence:** The `theralert_db_data` volume ensures your database data persists across container restarts. Do not delete this volume unless you intend to wipe your database.
-* **Database Migrations:** If you are using an ORM like Prisma with migrations, you'll need a strategy to run migrations. The most common approach for self-hosting is to add a `command` or `entrypoint` to your `theralert-app` service in `docker-compose.yml` that runs migrations *before* starting the Next.js server.
-    * Example (add to `theralert-app` service):
-        ```yaml
-        command: /bin/sh -c "npx prisma migrate deploy && node server.js"
-        ```
-        (Note: You'd need `prisma` installed in the production dependencies for this to work in the final image, which it typically is.)
-* **Backup Strategy:** Advise users on how to back up their `theralert_db_data` volume for disaster recovery.
-* **Resource Usage:** Note that Next.js applications, especially with server-side rendering, can consume more RAM than simple static sites. A Raspberry Pi 4 (4GB or 8GB RAM) is usually sufficient, but larger apps might require more.
