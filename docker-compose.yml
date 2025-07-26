@@ -5,7 +5,7 @@ services:
     image: awaghray/theralert:latest
     container_name: theralert
     ports:
-      - "3000:3000"
+      - "3002:3002"
     environment:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}

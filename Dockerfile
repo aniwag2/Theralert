@@ -55,6 +55,6 @@ COPY --chown=nextjs:nodejs schema.sql /app/schema.sql
 # Make the migration script executable
 RUN chmod +x /app/migrate.sh
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["/app/migrate.sh"]
