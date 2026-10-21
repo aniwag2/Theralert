@@ -11,6 +11,10 @@
 /tailwindcss
 /tailwindcss.exe
 
+# Personal time tracking (kept out of the public repo)
+/docs/Theralert_Hours_Log.xlsx
+/docs/~$*
+
 # Editor / OS
 .DS_Store
 .vscode/
