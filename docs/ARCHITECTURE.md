@@ -1190,7 +1190,7 @@ Templates are parsed once at startup and are safe for concurrent execution. Maps
 
 - Twelve-factor style: all configuration comes from environment variables (Appendix B). A local `.env` file is supported for development.
 - The process refuses to start without `SESSION_SECRET` and `DATABASE_URL`, or with an invalid `TZ` or `ALLOWED_CIDRS` entry.
-- In Docker, Compose interpolates `.env` into an explicit `environment:` list. **Only variables listed there reach the container**; `SIGNUP_OPEN` is currently missing from that list (D-1).
+- In Docker, Compose interpolates `.env` into an explicit `environment:` list. **Only variables listed there reach the container**; `SIGNUP_OPEN` was missing from that list (D-1) and is now passed through.
 
 ### 8.16 Logging and observability
 
